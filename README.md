@@ -134,6 +134,8 @@ $ docker plugin rm redis-log-driver
 
 ## Hack it
 
+You're more than welcome to hack on this. PRs are also welcome :-)
+
 ```
 $ git clone https://github.com/pressrelations/docker-redis-log-driver
 $ cd docker-redis-log-driver
