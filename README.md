@@ -1,11 +1,19 @@
 # docker-redis-log-driver
 
-Redis log driver for Docker. This is heavily inspired by https://github.com/cpuguy83/docker-log-driver-test.
+Redis log driver for Docker that sends all of the containers output to a Redis server. The code is heavily inspired by https://github.com/cpuguy83/docker-log-driver-test.
+
+## Background
+
+We use Redis as a reliable and very fast transport for logs, but not as a storage system. The excellent
+Logstash Redis input plugin (https://www.elastic.co/guide/en/logstash/current/plugins-inputs-redis.html) is highly recommended
+to pick up the logs and transport them to whatever output you like, for example Elasticsearch
+(https://www.elastic.co/guide/en/logstash/current/plugins-outputs-elasticsearch.html).
 
 ## Features
 
-* Send containers stdout/stderr to a Redis list
-* Log lines come as JSON messages with lots of meta data
+* Send containers stdout/stderr to a Redis list (via `RPUSH`)
+* Integrates seamlessly with orchestration platforms like Kubernetes, Mesos/Marathon or Docker Swarm
+* Log lines come as JSON messages with all important container meta data
   * Container ID (`container_id`)
   * Container name (`container_name`)
   * Container creation date (`container_created`)
@@ -16,14 +24,17 @@ Redis log driver for Docker. This is heavily inspired by https://github.com/cpug
   * Extra information as defined via `--log-opt labels=` or `--log-opt env=` (`extra`)
   * Host that container runs on (`host`)
   * Timestamp when log was generated (`timestamp`)
+* Message payload may be arbitrarily complex (e.g. JSON encoded)
 * Configure logging setup either globally through Docker `config.json` or per container (`--log-opt` style)
 * Customizable Redis connection timeouts
 * Automatic Redis reconnects
 
-## Install
+## Requirements
 
-Requires at least Docker 17.05 since that brings support for log driver plugins. Doesn't work on Windows currently because
-log driver plugins aren't supported by Docker for Windows.
+* Docker >= 17.05 (since that brings log driver plugin support).
+* Docker for Windows isn't supported at the moment (see https://docs.docker.com/engine/extend/)
+
+## Install
 
 ```
 git clone https://github.com/pressrelations/docker-redis-log-driver
