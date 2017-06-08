@@ -54,7 +54,7 @@ Installed plugin pressrelations/docker-redis-log-driver:0.0.1
 Run a container using this plugin:
 
 ```
-docker run --log-driver redis-log-driver --log-opt redis-address=some.redis.server:6379 --log-opt redis-password=secure --log-opt redis-list=logs alpine date
+$ docker run --log-driver redis-log-driver --log-opt redis-address=some.redis.server:6379 --log-opt redis-password=secure --log-opt redis-list=logs alpine date
 ```
 
 Observe the Redis list named `logs` in database `0` of your Redis instance. You should see a JSON like the following:
@@ -84,7 +84,7 @@ This example shows the usage of
 * Container environment variable logging
 
 ```
-docker run --label foo=abc --label bar=xyz -e SOME_ENV_VAR=foobar --log-driver redis-log-driver --log-opt redis-address=some.redis.server:6379 --log-opt redis-password=secure --log-opt redis-list=logs --log-opt "tag={{.ImageName}}/{{.Name}}/{{.ID}}" --log-opt labels=foo,bar --log-opt env=SOME_ENV_VAR alpine date
+$ docker run --label foo=abc --label bar=xyz -e SOME_ENV_VAR=foobar --log-driver redis-log-driver --log-opt redis-address=some.redis.server:6379 --log-opt redis-password=secure --log-opt redis-list=logs --log-opt "tag={{.ImageName}}/{{.Name}}/{{.ID}}" --log-opt labels=foo,bar --log-opt env=SOME_ENV_VAR alpine date
 ```
 
 Observe the Redis list named `logs` in database `0` of your Redis instance. You should see a JSON like the following:
@@ -114,19 +114,19 @@ Observe the Redis list named `logs` in database `0` of your Redis instance. You 
 To uninstall, please make sure that no containers are still using this plugin. After that, disable and remove the plugin like this:
 
 ```
-docker plugin disable redis-log-driver
-docker plugin rm redis-log-driver
+$ docker plugin disable redis-log-driver
+$ docker plugin rm redis-log-driver
 ```
 
 ## Hack it
 
 ```
-git clone https://github.com/pressrelations/docker-redis-log-driver
-cd docker-redis-log-driver
-docker build -t docker-redis-log-driver .
-ID=$(docker create docker-redis-log-driver true)
-mkdir rootfs
-docker export $ID | tar -x -C rootfs/
-docker plugin create redis-log-driver .
-docker plugin enable redis-log-driver
+$ git clone https://github.com/pressrelations/docker-redis-log-driver
+$ cd docker-redis-log-driver
+$ docker build -t docker-redis-log-driver .
+$ ID=$(docker create docker-redis-log-driver true)
+$ mkdir rootfs
+$ docker export $ID | tar -x -C rootfs/
+$ docker plugin create redis-log-driver .
+$ docker plugin enable redis-log-driver
 ```
