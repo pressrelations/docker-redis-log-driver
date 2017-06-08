@@ -109,6 +109,20 @@ Observe the Redis list named `logs` in database `0` of your Redis instance. You 
 }
 ```
 
+### Options
+
+All available options are documented here and can be set via `--log-opt KEY=VALUE`. Timeouts need to be specified in a format supported by https://golang.org/pkg/time/#ParseDuration.
+
+|Key|Default|Description|
+|---|---|---|
+|redis-address||TCP address to connect to in the form `host:port`|
+|redis-password||Redis password|
+|redis-database|0|Redis database index|
+|redis-list||Redis variable to append logs to|
+|redis-connect-timeout|5s|Timeout when connecting to Redis|
+|redis-read-timeout|5s|Timeout when reading from Redis|
+|redis-write-timeout|5s|Timeout when writing to Redis|
+
 ## Uninstall
 
 To uninstall, please make sure that no containers are still using this plugin. After that, disable and remove the plugin like this:
