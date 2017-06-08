@@ -2,8 +2,8 @@ package driver
 
 import (
 	"encoding/json"
-	"time"
 	"fmt"
+	"time"
 
 	"github.com/pressrelations/docker-redis-log-driver/redis"
 )

@@ -26,12 +26,12 @@ type Driver struct {
 }
 
 type logPair struct {
-	active   bool
-	file     string
-	info     logger.Info
-	logLine  jsonLogLine
-	stream   io.ReadCloser
-	redis    *redis.Connection
+	active  bool
+	file    string
+	info    logger.Info
+	logLine jsonLogLine
+	stream  io.ReadCloser
+	redis   *redis.Connection
 }
 
 func NewDriver() *Driver {
@@ -75,10 +75,10 @@ func (d *Driver) StartLogging(file string, logCtx logger.Info) error {
 		ContainerCreated: jsonTime{logCtx.ContainerCreated},
 		ImageId:          logCtx.ImageFullID(),
 		ImageName:        logCtx.ImageName(),
-		Command:           logCtx.Command(),
-		Tag:               tag,
-		Extra:             extra,
-		Host:              hostname,
+		Command:          logCtx.Command(),
+		Tag:              tag,
+		Extra:            extra,
+		Host:             hostname,
 	}
 
 	redis := buildRedis(&logCtx)
