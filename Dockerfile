@@ -13,7 +13,7 @@ RUN go get github.com/pkg/errors
 RUN go get github.com/Sirupsen/logrus
 RUN go get github.com/tonistiigi/fifo
 RUN go get github.com/gogo/protobuf/io
-RUN go get github.com/garyburd/redigo/redis
+RUN go get github.com/go-redis/redis
 
 COPY . /go/src/github.com/pressrelations/docker-redis-log-driver
 RUN go get

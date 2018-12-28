@@ -81,7 +81,11 @@ func (d *Driver) StartLogging(file string, logCtx logger.Info) error {
 		Host:             hostname,
 	}
 
-	redis := buildRedis(&logCtx)
+	redis, err := buildRedis(&logCtx)
+	if err != nil {
+		return err
+	}
+
 	lp := &logPair{true, file, logCtx, logLine, stream, redis}
 
 	d.mu.Lock()
@@ -152,17 +156,21 @@ func consumeLog(lp *logPair) {
 	}
 }
 
-func buildRedis(logCtx *logger.Info) *redis.Connection {
+func buildRedis(logCtx *logger.Info) (*redis.Connection, error) {
 	server := readWithDefault(logCtx.Config, "redis-address", "")
+	sentinels := parseList(readWithDefault(logCtx.Config, "redis-sentinels", ""))
+	masterName := readWithDefault(logCtx.Config, "redis-master-name", "")
 	password := readWithDefault(logCtx.Config, "redis-password", "")
 	database := parseInt(readWithDefault(logCtx.Config, "redis-database", "0"))
 	list := readWithDefault(logCtx.Config, "redis-list", "")
-	connectTimeout := parseDuration(readWithDefault(logCtx.Config, "redis-connect-timeout", "5s"))
-	readTimeout := parseDuration(readWithDefault(logCtx.Config, "redis-read-timeout", "5s"))
-	writeTimeout := parseDuration(readWithDefault(logCtx.Config, "redis-write-timeout", "5s"))
+	connectTimeout := parseDuration(readWithDefault(logCtx.Config, "redis-connect-timeout", "1s"))
+	readTimeout := parseDuration(readWithDefault(logCtx.Config, "redis-read-timeout", "1s"))
+	writeTimeout := parseDuration(readWithDefault(logCtx.Config, "redis-write-timeout", "1s"))
 
 	redisConfig := &redis.Config{
 		Server:         server,
+		Sentinels:      sentinels,
+		MasterName:     masterName,
 		Password:       password,
 		Database:       database,
 		List:           list,

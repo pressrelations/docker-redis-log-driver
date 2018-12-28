@@ -116,12 +116,14 @@ All available options are documented here and can be set via `--log-opt KEY=VALU
 |Key|Default|Description|
 |---|---|---|
 |redis-address||TCP address to connect to in the form `host:port`|
+|redis-sentinels||Comma separated list of sentinel TCP addresses to connect to in the form `host:port`|
+|redis-master-name||Name of master to connect to (in case of Sentinel) |
 |redis-password||Redis password|
 |redis-database|0|Redis database index|
 |redis-list||Redis variable to append logs to|
-|redis-connect-timeout|5s|Timeout when connecting to Redis|
-|redis-read-timeout|5s|Timeout when reading from Redis|
-|redis-write-timeout|5s|Timeout when writing to Redis|
+|redis-connect-timeout|1s|Timeout when connecting to Redis|
+|redis-read-timeout|1s|Timeout when reading from Redis|
+|redis-write-timeout|1s|Timeout when writing to Redis|
 
 ## Uninstall
 
@@ -139,10 +141,5 @@ You're more than welcome to hack on this. PRs are also welcome :-)
 ```
 $ git clone https://github.com/pressrelations/docker-redis-log-driver
 $ cd docker-redis-log-driver
-$ docker build -t docker-redis-log-driver .
-$ ID=$(docker create docker-redis-log-driver true)
-$ mkdir rootfs
-$ docker export $ID | tar -x -C rootfs/
-$ docker plugin create redis-log-driver .
-$ docker plugin enable redis-log-driver
+$ ./build.sh
 ```

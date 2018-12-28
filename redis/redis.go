@@ -4,11 +4,13 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	redigo "github.com/garyburd/redigo/redis"
+	"github.com/go-redis/redis"
 )
 
 type Config struct {
 	Server         string
+	Sentinels      []string
+	MasterName     string
 	Password       string
 	Database       int
 	List           string
@@ -18,55 +20,80 @@ type Config struct {
 }
 
 type Connection struct {
-	pool   *redigo.Pool
+	client *redis.Client
 	config *Config
 }
 
-func Connect(c *Config) *Connection {
-	pool := &redigo.Pool{
-		MaxActive:   1,
-		MaxIdle:     1,
-		Wait:        true,
-		IdleTimeout: 300 * time.Second,
-		Dial: func() (redigo.Conn, error) {
-			conn, err := redigo.Dial(
-				"tcp",
-				c.Server,
-				redigo.DialReadTimeout(c.ReadTimeout),
-				redigo.DialWriteTimeout(c.WriteTimeout),
-				redigo.DialConnectTimeout(c.ConnectTimeout),
-				redigo.DialDatabase(c.Database),
-				redigo.DialPassword(c.Password),
-			)
+func Connect(c *Config) (*Connection, error) {
+	var client *redis.Client
 
-			if err != nil {
-				logrus.WithError(err).Errorf("error connecting to Redis server: %q", c.Server)
-			} else {
-				logrus.Debugf("connection established to Redis server: %q", c.Server)
-			}
+	if c.Server != "" {
+		client = redis.NewClient(&redis.Options{
+			Addr:            c.Server,
+			Password:        c.Password,
+			DB:              c.Database,
+			DialTimeout:     c.ConnectTimeout,
+			ReadTimeout:     c.ReadTimeout,
+			WriteTimeout:    c.WriteTimeout,
+			PoolSize:        5,
+			MinIdleConns:    1,
+			MaxRetries:      10,
+			MinRetryBackoff: 250 * time.Millisecond,
+			MaxRetryBackoff: 1000 * time.Millisecond,
+		})
 
-			return conn, err
-		},
+		err := client.Ping().Err()
+
+		if err != nil {
+			logrus.WithError(err).Errorf("error connecting to Redis server: %q", c.Server)
+			client.Close()
+			return nil, err
+		}
+
+		logrus.Debugf("connection established to Redis server: %q", c.Server)
+	} else {
+		client = redis.NewFailoverClient(&redis.FailoverOptions{
+			MasterName:      c.MasterName,
+			SentinelAddrs:   c.Sentinels,
+			Password:        c.Password,
+			DB:              c.Database,
+			DialTimeout:     c.ConnectTimeout,
+			ReadTimeout:     c.ReadTimeout,
+			WriteTimeout:    c.WriteTimeout,
+			PoolSize:        5,
+			MinIdleConns:    1,
+			MaxRetries:      10,
+			MinRetryBackoff: 250 * time.Millisecond,
+			MaxRetryBackoff: 1000 * time.Millisecond,
+		})
+
+		err := client.Ping().Err()
+
+		if err != nil {
+			logrus.WithError(err).Errorf("error connecting to Redis server via Sentinel: %q", c.Sentinels)
+			client.Close()
+			return nil, err
+		}
+		logrus.Debugf("connection established to Redis server via Sentinel: %q", c.Sentinels)
 	}
 
 	return &Connection{
-		pool:   pool,
+		client: client,
 		config: c,
-	}
+	}, nil
 }
 
 func (c *Connection) Disconnect() {
-	if c.pool != nil {
-		c.pool.Close()
+	if c.client != nil {
+		c.client.Close()
+		logrus.Debugf("disconnected from Redis server")
 	}
 
 	return
 }
 
 func AppendToList(str string, c *Connection) error {
-	conn := c.pool.Get()
-	_, err := conn.Do("RPUSH", c.config.List, str)
-	conn.Close()
+	err := c.client.RPush(c.config.List, str).Err()
 
 	if err != nil {
 		return err

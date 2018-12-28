@@ -2,6 +2,7 @@ package driver
 
 import (
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -19,6 +20,10 @@ func parseInt(i string) int {
 		panic(err)
 	}
 	return int(res)
+}
+
+func parseList(s string) []string {
+	return strings.Split(s, ",")
 }
 
 func readWithDefault(m map[string]string, key string, def string) string {
